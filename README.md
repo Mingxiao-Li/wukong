@@ -1,1 +1,1 @@
-# x (Personal neural network toolkit.) 
+# X (Personal neural network toolkit) 
