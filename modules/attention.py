@@ -19,11 +19,12 @@ class SelfAttention(nn.Module):
                  act_fun : str = "relu",
                  output_attn=False):
         super(SelfAttention, self).__init__()
+
+        self.output_attn = output_attn
         self.mhatt = MultiHeadAttention(hidden_size=hidden_size,
                                         multi_head=multi_head,
                                         hidden_size_head=hidden_size_head,
-                                        dropout_r=dropout_r,
-                                        output_attn=output_attn)
+                                        dropout_r=dropout_r,)
         self.use_ffn = use_ffn
         if self.use_ffn:
             assert mid_size is not None, "Mid size should not be None"
@@ -34,16 +35,19 @@ class SelfAttention(nn.Module):
                            dropout_r=dropout_r,
                            act_fun= act_fun)
 
-        self.dropout1 = nn.Dropout(dropout_r)
-        self.norm1 = LayerNorm(hidden_size)
+        self.dropout = nn.Dropout(dropout_r)
+        self.norm = LayerNorm(hidden_size)
 
 
     def forward(self, x , mask=None):
-        x = self.norm1(x + self.dropout1(
-            self.mhatt(x, x, x, mask)
-        ))
+
+        x1,attn = self.mhatt(x,x,x,mask)
+        x = self.norm(x + self.dropout(x1))
         if self.use_ffn:
             x = self.ffn(x)
+
+        if self.output_attn:
+            return x,attn
         return x
 
 
@@ -55,13 +59,11 @@ class MultiHeadAttention(nn.Module):
                  hidden_size,
                  multi_head,
                  hidden_size_head,
-                 dropout_r,
-                 output_attn = False):
+                 dropout_r):
         super(MultiHeadAttention, self).__init__()
         self.hidden_size = hidden_size
         self.multi_head = multi_head
         self.hidden_size_head = hidden_size_head
-        self.output_attn = output_attn
 
         self.linear_v = nn.Linear(hidden_size, hidden_size)
         self.linear_k = nn.Linear(hidden_size, hidden_size)
@@ -91,6 +93,15 @@ class MultiHeadAttention(nn.Module):
                                   self.multi_head,
                                   self.hidden_size_head).transpose(1,2)
 
+        output, attn = self.attention(v,k,q,mask)
+        output = output.transpose(1,2).contiguous().view(
+            batch_size,
+            -1,
+            self.hidden_size
+        )
+        output = self.linear_merge(output)
+        return output,attn
+
 
     def attention(self, value, key, query, mask):
         d_k = query.size(-1) # hideen_size_head
@@ -105,14 +116,12 @@ class MultiHeadAttention(nn.Module):
         if mask is not None:
             #mask = [0,0,0,1,1,1]
             mask = mask.unsqueeze(1).unsqueeze(2).expand(scores.shape)
-            scores = scores.masked_fille(mask==1, 1e-32)
+            scores = scores.masked_fill(mask==1, 1e-32)
 
         att_map = F.softmax(scores, dim=-1)
         att_map = self.dropout(att_map)
-        output = (torch.matmul(att_map, value),)
-        if self.output_attn:
-            output += (att_map,)
-        return output
+        output = torch.matmul(att_map, value)
+        return output,att_map
 
 
 
@@ -135,11 +144,11 @@ class CrossAttention(nn.Module):
                  output_attn=False):
         super(CrossAttention, self).__init__()
 
+        self.output_attn = output_attn
         self.mhatt = MultiHeadAttention(hidden_size=hidden_size,
                                         multi_head=multi_head,
                                         hidden_size_head=hidden_size_head,
-                                        dropout_r=dropout_r,
-                                        output_attn=output_attn)
+                                        dropout_r=dropout_r)
         self.dropout = nn.Dropout(dropout_r)
         self.norm = LayerNorm(hidden_size)
 
@@ -155,11 +164,11 @@ class CrossAttention(nn.Module):
 
     def forward(self, x_v, x_k, y_q, mask):
 
-        y = self.norm(y_q +  self.dropout(
-            self.mhatt(x_v,x_k,y_q, mask)
-        ))
+        y1, attn = self.mhatt(x_v,x_k,y_q,mask)
+        y  = self.norm(y_q + self.dropout(y1))
 
         if self.use_ffn:
             y = self.ffn(y)
-
+        if self.output_attn:
+            return y, attn
         return y

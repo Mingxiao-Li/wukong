@@ -55,8 +55,9 @@ class ImageFeaturesH5Reader(object):
         return len(self._image_ids)
 
     def __getitem__(self, image_id):
-        image_id = str(image_id).encode()
+        #image_id = str(image_id).encode()
         index = self._image_ids.index(image_id)
+        image_id = str(image_id).encode()
        # image_id = str(image_id).encode()
         cls_prob = None
         if self._in_memory:
