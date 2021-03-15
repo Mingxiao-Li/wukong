@@ -3,9 +3,9 @@ import torch
 def get_recall_at_k(prediction, gt_truth, k):
     r"""
     :param prediction: shape (batch_size, num_class)
-    :param gt_truth: shape (batch_size,1) postion of grount trunth in the list candidated classes
+    :param gt_truth: shape (batch_size,1) position of ground truth in the list candidate classes
     :param k: top k
-    :return:
+    :return: num of samples that are in recall at k
     """
     batch_size = prediction.shape[0]
     values, indices = torch.sort(prediction, dim=1, descending=True)
