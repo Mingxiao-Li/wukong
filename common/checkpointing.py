@@ -73,10 +73,10 @@ class XCheckpointManager(ACheckpointManager):
         else:
             return self.model.state_dict()
 
-    def load_checkpoint(self, check_pointpath):
-        if os.path.exists(check_pointpath):
-            raise FileNotFoundError(f"{check_pointpath} doesn't exist")
-        components = torch.load(check_pointpath)
+    def load_checkpoint(self, check_point_path):
+        if os.path.exists(check_point_path):
+            raise FileNotFoundError(f"{check_point_path} doesn't exist")
+        components = torch.load(check_point_path)
         return components["model"], components["optimizer"]
 
 

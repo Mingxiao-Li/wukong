@@ -49,6 +49,7 @@ class XExecution(AExecution):
         self._checkpointing = registry.get_checkpointing("CheckpointManager")
 
         self.logger.info(self._C)
+
     def register_all(self):
         """
         Register all necessary components (model,dataset,...) to run the experiments.

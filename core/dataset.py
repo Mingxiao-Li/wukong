@@ -54,7 +54,7 @@ class XDataset(Dataset):
         input_tensor = torch.LongTensor([input_list])
         if input_tensor.shape[1] >= max_seq_len:
             return input_tensor[:, :max_seq_len]
-        input_tensor_zeros = torch.zeros(1, max_seq_len,dtype=torch.long)
+        input_tensor_zeros = torch.ones(1, max_seq_len,dtype=torch.long) # 1 for PAD Token
         input_tensor_zeros[0, :input_tensor.shape[1]] = input_tensor
         input_tensor = input_tensor_zeros
         if return_mask:
