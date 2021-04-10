@@ -45,7 +45,7 @@ class Vocabulary(object):
         # sort in descending order of word counts
         word_counts = sorted(word_counts, key=lambda  wc: -wc[1])
         words  = [w[0] for w in word_counts]
-        print("num of words", len(words))
+
         if special_tokens is not None:
             assert len(special_tokens) <= 7, "Can only add less than 7 special tokens. " \
                                              "Change the source code if you want to add more !"

@@ -10,7 +10,7 @@ class DynamicRNN(nn.Module):
         lstm = nn.LSTM()
         rnn = DynamicRNN(lstm)
     """
-    def __init__(self, rnn_model, output_last_layer = True):
+    def __init__(self, rnn_model,output_last_layer):
         super().__init__()
         self.rnn_model = rnn_model
         self.output_last_layer = output_last_layer
@@ -35,36 +35,36 @@ class DynamicRNN(nn.Module):
         max_sequence_length = seq_input.size(1)
         sorted_len, fwd_order, bwd_order = self._get_sorted_order(seq_lens)
         sorted_seq_input = seq_input.index_select(0, fwd_order)
-        sorted_len = [x.item() for x in sorted_len]
         packed_seq_input = pack_padded_sequence(
-            sorted_seq_input, lengths=sorted_len, batch_first=True
+            sorted_seq_input, lengths = sorted_len, batch_first = True
         )
 
         if initial_state is not None:
             hx = initial_state
             sorted_hx = [x.index_select(1, fwd_order) for x in hx]
-            assert hx[0].size(0) == self.rnn_model.num_layers
+            assert  hx[0].size(0) == self.rnn_model.num_layers
         else:
             hx = None
 
         self.rnn_model.flatten_parameters()
         outputs, (h_n, c_n) = self.rnn_model(packed_seq_input, hx)
+
+        #pick hideen and cell states of last layer
+        if self.output_last_layer:
+            h_n = h_n[-1].index_select(dim=0,index=bwd_order)
+            c_n = c_n[-1].index_select(dim=0,index=bwd_order)
+        else:
+            h_n = h_n.index_select(dim=1, index=bwd_order)
+            c_n = c_n.index_select(dim=1, index=bwd_order)
+
         outputs = pad_packed_sequence(
             outputs, batch_first=True, total_length=max_sequence_length
         )
-        if not self.output_last_layer:
-            h_n = h_n.index_select(dim=1, index=bwd_order)
-            c_n = c_n.index_select(dim=1, index=bwd_order)
-        else:
-            # pick hideen and cell states of last layer
-            h_n = h_n[-1].index_select(dim=0, index=bwd_order)
-            c_n = c_n[-1].index_select(dim=0, index=bwd_order)
-
-        return outputs, (h_n, c_n)
+        return outputs, (h_n,c_n)
 
     @staticmethod
     def _get_sorted_order(lens):
-        sorted_len, fwd_order = torch.sort(lens.view(-1), descending=True)
+        sorted_len, fwd_order = torch.sort(lens.contiguous().view(-1), 0, descending=True)
         _, bwd_order = torch.sort(fwd_order)
         sorted_len = list(sorted_len)
         return sorted_len, fwd_order, bwd_order

@@ -49,7 +49,6 @@ class XExecution(AExecution):
         self._checkpointing = registry.get_checkpointing("CheckpointManager")
 
         self.logger.info(self._C)
-
     def register_all(self):
         """
         Register all necessary components (model,dataset,...) to run the experiments.
@@ -69,7 +68,7 @@ class XExecution(AExecution):
         raise NotImplementedError
 
 
-    def eval(self,dataset, state_dict_path,valid):
+    def eval(self,dataset, state_dict_path=None,valid=None):
         raise NotImplementedError
 
     def run(self, run_mode):
@@ -83,6 +82,8 @@ class XExecution(AExecution):
             self.eval(self.dataset,valid=True)
 
         elif run_mode == "test":
+            assert self._C.DATA.split == "test", \
+                "Data split is {}. Split has to be 'test' during testing !!".format(self._C.DATA.split)
             self.eval(self.dataset)
 
 
