@@ -1,4 +1,5 @@
 from typing import Union, List
+import os
 import numpy as np
 import torch,json
 import torch.nn as nn
@@ -9,6 +10,7 @@ def get_numpy_word_embed(word2index: Union[dict,None],pretrained_wordemb_path: s
 
     :param word2index: dict {word:index...}
     :param pretrained_wordemb_path:  txt file （word,num1,num2,...）
+           pretraiend_wordemb_path_np: .npy file (word_1_embd, word_2_embd,...)
     :return: pretrained word embedding
 
     Example
@@ -16,8 +18,9 @@ def get_numpy_word_embed(word2index: Union[dict,None],pretrained_wordemb_path: s
     >>> word_embedding = get_numpy_word_embed(word2index,pretrained_wordemb_path)
     >>> embedding = nn.Embedding.from_pretrained(torch.FloatTensor(word_embedding))
     """
-    if word2index is None:
-        return np.load(pretrained_wordemb_path)
+    pretrained_wordemb_path_np = pretrained_wordemb_path.replace("txt","npy")
+    if os.path.exists(pretrained_wordemb_path_np):
+        return np.load(pretrained_wordemb_path_np)
 
     words_embed = {}
     with open(pretrained_wordemb_path, "r") as pretrained_wordemb_file:
@@ -41,7 +44,7 @@ def get_numpy_word_embed(word2index: Union[dict,None],pretrained_wordemb_path: s
 
     # set unk embedding which the averate embedding of all words
     word_embedings[0,:] = np.mean(word_embedings[1:,:],axis=0)
-    np.save("glove.42B.300d.npy",word_embedings)
+    np.save(pretrained_wordemb_path_np,word_embedings)
     print("New word_embedding with correct index is saved to 'glove.42B.300d.npy' successfully,"
           "You can load this .npy file drectly next time !!")
     return word_embedings
