@@ -42,6 +42,8 @@ def get_numpy_word_embed(word2index: Union[dict,None],pretrained_wordemb_path: s
     # set unk embedding which the averate embedding of all words
     word_embedings[0,:] = np.mean(word_embedings[1:,:],axis=0)
     np.save("glove.42B.300d.npy",word_embedings)
+    print("New word_embedding with correct index is saved to 'glove.42B.300d.npy' successfully,"
+          "You can load this .npy file drectly next time !!")
     return word_embedings
 
 

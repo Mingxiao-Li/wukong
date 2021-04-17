@@ -23,7 +23,6 @@ class XDataset(Dataset):
             self._data = self.load_data_from_json(data_path)
 
             if _C.num_train_sample != 0 and self._split== "train":
-                print("train!!!!!!!!")
                 self._data = self._data[:_C.num_train_sample]
             if _C.num_val_sample != 0 and self._split =="val":
                 self._data = self._data[:_C.num_val_sample]
