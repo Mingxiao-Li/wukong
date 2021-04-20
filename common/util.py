@@ -1,10 +1,13 @@
 from typing import Union, List
 import os
 import numpy as np
-import torch,json
+import torch, json
 import torch.nn as nn
 
-def get_numpy_word_embed(word2index: Union[dict,None],pretrained_wordemb_path: str) -> np.array:
+
+def get_numpy_word_embed(
+    word2index: Union[dict, None], pretrained_wordemb_path: str
+) -> np.array:
     """
     read pretrained word embedding from file and conver it to np.array
 
@@ -18,7 +21,7 @@ def get_numpy_word_embed(word2index: Union[dict,None],pretrained_wordemb_path: s
     >>> word_embedding = get_numpy_word_embed(word2index,pretrained_wordemb_path)
     >>> embedding = nn.Embedding.from_pretrained(torch.FloatTensor(word_embedding))
     """
-    pretrained_wordemb_path_np = pretrained_wordemb_path.replace("txt","npy")
+    pretrained_wordemb_path_np = pretrained_wordemb_path.replace("txt", "npy")
     if os.path.exists(pretrained_wordemb_path_np):
         return np.load(pretrained_wordemb_path_np)
 
@@ -32,7 +35,7 @@ def get_numpy_word_embed(word2index: Union[dict,None],pretrained_wordemb_path: s
             embed = [float(num) for num in embed]
             words_embed[word] = embed
     dim = len(embed)
-    index2word = {index: word for word,index in word2index.items()}
+    index2word = {index: word for word, index in word2index.items()}
     id2emb = {}
     for index in range(len(word2index)):
         if index2word[index] in words_embed:
@@ -43,18 +46,20 @@ def get_numpy_word_embed(word2index: Union[dict,None],pretrained_wordemb_path: s
     word_embedings = np.array([id2emb[index] for index in range(len(word2index))])
 
     # set unk embedding which the averate embedding of all words
-    word_embedings[0,:] = np.mean(word_embedings[1:,:],axis=0)
-    np.save(pretrained_wordemb_path_np,word_embedings)
-    print("New word_embedding with correct index is saved to 'glove.42B.300d.npy' successfully,"
-          "You can load this .npy file drectly next time !!")
+    word_embedings[0, :] = np.mean(word_embedings[1:, :], axis=0)
+    np.save(pretrained_wordemb_path_np, word_embedings)
+    print(
+        "New word_embedding with correct index is saved to 'glove.42B.300d.npy' successfully,"
+        "You can load this .npy file drectly next time !!"
+    )
     return word_embedings
 
 
-def get_word_count(data_source: Union[str,dict]):
-    if isinstance(data_source,str):
-        with open(data_source,"r") as f:
+def get_word_count(data_source: Union[str, dict]):
+    if isinstance(data_source, str):
+        with open(data_source, "r") as f:
             word_count_dict = json.load(f)
-        return  word_count_dict
+        return word_count_dict
 
     word_count_dict = dict()
     for sample in data_source:
@@ -66,7 +71,7 @@ def get_word_count(data_source: Union[str,dict]):
     return word_count_dict
 
 
-def logging_format(losses: List[str], show_iter: bool = True) -> str :
+def logging_format(losses: List[str], show_iter: bool = True) -> str:
     # A simple function to return format of showing loss info
     # example : log_f % tuple([])
     if show_iter:
@@ -76,5 +81,4 @@ def logging_format(losses: List[str], show_iter: bool = True) -> str :
     loss_f = ""
     for loss in losses:
         loss_f += "[{} :%.3g]".format(loss)
-    return basic_format+loss_f
-
+    return basic_format + loss_f

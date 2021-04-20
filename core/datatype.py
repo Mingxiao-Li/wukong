@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
 
+
 class AExecution(ABC):
     r"""
     Abstract class for execution
     (avoid circular dependencies for registr)
     """
+
     @abstractmethod
     def train(self, *args, **kwargs):
         pass
@@ -27,6 +29,7 @@ class ACheckpointManager(ABC):
     Abstract class for checkpointing manager
     (avoid circular dependencies for registr)
     """
+
     @abstractmethod
     def step(self, *args, **kwargs):
         pass
@@ -42,8 +45,8 @@ class ACheckpointManager(ABC):
 
 class ALRScheduler(ABC):
     r"""
-        Abstract class for learning scheduler
-        (avoid circular dependencies for registr)
+    Abstract class for learning scheduler
+    (avoid circular dependencies for registr)
     """
 
     @abstractmethod
@@ -53,7 +56,3 @@ class ALRScheduler(ABC):
     @abstractmethod
     def update_lr(self, *args, **kwargs):
         pass
-
-
-
-
