@@ -152,3 +152,18 @@ model_zoo/mucko/
 
 #kg embedding
 KnowledgeGraphEmbedding/
+
+#vscode
+.vscode/
+
+#ignore test (jupyter)
+test.py
+
+# ignore json file
+*.json
+
+#ignore jupyter
+*.ipynb
+
+#ignore pyc
+/*/__pycache__/
