@@ -25,8 +25,8 @@ def convert_csv_to_lmdb(in_path: str, out_path: str, field_name: List[str],
                 data["image_w"] = int(item["image_w"])
                 data["num_boxes"] = int(item["num_boxes"])
                 for field in ['boxes','features','cls_prob','box_obj_id']:
-                    data[field] = np.frombuffer(base64.b64decode(item[field]),
-                                  dtype=np.float32).reshape((item['num_bpxes'],-1))
+                    data[field] = np.frombuffer(base64.b64decode(item[field][1:]),
+                                  dtype=np.float32).reshape((data['num_bpxes'],-1))
             info = pickle.dump(data)
             txn.put(key=str(item["image_id"]).encode(),value=info)
     txn.commit()
