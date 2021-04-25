@@ -103,7 +103,7 @@ class XRegistry(metaclass=Singleton):
         )
 
     @classmethod
-    def register(cls, to_register=None, *, type: str, name: Optional[str] = None):
+    def register(cls, type: str, to_register=None, *, name: Optional[str] = None):
         r"""Register new type that is not defined in this class
         :param name: Key with which the task will be registered.
         If :py:`None` will use the name of the class:
